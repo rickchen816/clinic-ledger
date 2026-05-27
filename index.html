@@ -275,14 +275,15 @@ async function loadStats() {
       updateMonthOptions(res.months);
       calcAndShowStats(res.records);
       window._allRecords = res.records;
-      // 同步 rowIndex 到 localLog
+      // 同步 rowIndex 到 localLog（用金額+類型+診所比對）
       if (res.records && localLog.length) {
         localLog.forEach(r => {
           const match = res.records.find(sr =>
-            sr.date === r.date && sr.type === r.type &&
-            String(sr.amount) === String(r.amount) && sr.note === r.note
+            sr.type === r.type &&
+            Number(sr.amount) === Number(r.amount) &&
+            sr.clinic === r.clinic
           );
-          if (match && match.rowIndex) r.rowIndex = match.rowIndex;
+          if (match) r.rowIndex = match.rowIndex;
         });
         renderLog();
       }
@@ -439,9 +440,19 @@ async function deleteRecord(idx) {
   const delBtn = document.querySelector(`#log-item-${idx} .del-log-btn`);
   if (delBtn) { delBtn.disabled = true; delBtn.textContent = '…'; }
 
-  // 如果沒有 rowIndex，先載入統計取得 rowIndex
-  if (!r.rowIndex) {
-    alert('請先按 ↻ 重新整理後再刪除');
+  // 從 _allRecords 即時查找 rowIndex
+  let rowIndex = r.rowIndex;
+  if (!rowIndex && window._allRecords) {
+    const match = window._allRecords.find(sr =>
+      sr.type === r.type &&
+      Number(sr.amount) === Number(r.amount) &&
+      sr.clinic === r.clinic
+    );
+    if (match) rowIndex = match.rowIndex;
+  }
+
+  if (!rowIndex) {
+    alert('無法取得列號，請按 ↻ 重新整理後再試');
     if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
     return;
   }
@@ -450,7 +461,7 @@ async function deleteRecord(idx) {
     const res = await jsonpFetch({
       action: 'deleteRow',
       clinic: r.clinic,
-      rowIndex: r.rowIndex
+      rowIndex: rowIndex
     });
     if (res.success) {
       localLog.splice(idx, 1);
