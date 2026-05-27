@@ -275,18 +275,7 @@ async function loadStats() {
       updateMonthOptions(res.months);
       calcAndShowStats(res.records);
       window._allRecords = res.records;
-      // 同步 rowIndex 到 localLog（用金額+類型+診所比對）
-      if (res.records && localLog.length) {
-        localLog.forEach(r => {
-          const match = res.records.find(sr =>
-            sr.type === r.type &&
-            Number(sr.amount) === Number(r.amount) &&
-            sr.clinic === r.clinic
-          );
-          if (match) r.rowIndex = match.rowIndex;
-        });
-        renderLog();
-      }
+      renderLog(); // _allRecords 更新後重新渲染，顯示刪除按鈕
     } else {
       setStatError();
     }
@@ -412,59 +401,50 @@ async function submitRecord() {
 function showStatus(t, msg) { const el = document.getElementById('status'); el.className = 'status ' + t; el.textContent = msg; }
 
 function renderLog() {
-  document.getElementById('log-count').textContent = localLog.length + ' 筆';
+  // 優先顯示從 Sheets 讀回的資料（有 rowIndex），否則顯示本次記錄
+  const source = (window._allRecords && window._allRecords.length) ? window._allRecords.slice().reverse() : localLog;
+  const isFromSheets = !!(window._allRecords && window._allRecords.length);
+
+  document.getElementById('log-count').textContent = source.length + ' 筆';
   const el = document.getElementById('log-list');
-  if (!localLog.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>尚未記錄任何項目</div>'; return; }
-  el.innerHTML = localLog.slice(0, 10).map((r, i) => `
+  if (!source.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>尚未記錄任何項目</div>'; return; }
+  el.innerHTML = source.slice(0, 10).map((r, i) => `
     <div class="log-item" id="log-item-${i}">
       <div class="log-left">
         <div class="log-top">
           <span class="badge ${r.type}">${r.type === 'income' ? '收入' : '支出'}</span>
-          <span class="log-clinic">${r.clinic}</span>
+          <span class="log-clinic">${r.clinic || clinic}</span>
         </div>
         ${r.note ? `<div class="log-note">${r.note}</div>` : ''}
-        <div class="log-time">${r.date} ${r.time}</div>
+        <div class="log-time">${r.date} ${r.time || ''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         <div class="log-amount ${r.type}">${r.type === 'income' ? '＋' : '－'}$${Number(r.amount).toLocaleString('zh-TW')}</div>
-        <button class="del-log-btn" onclick="deleteRecord(${i})" title="刪除">✕</button>
+        ${isFromSheets && r.rowIndex ? `<button class="del-log-btn" id="del-btn-${i}" onclick="deleteRecord(${i})" title="刪除">✕</button>` : '<span style="font-size:11px;color:#ccc;">↻</span>'}
       </div>
     </div>`).join('');
 }
 
 async function deleteRecord(idx) {
-  const r = localLog[idx];
-  if (!r) return;
+  // 直接從 _allRecords 取資料（已有 rowIndex）
+  const source = window._allRecords ? window._allRecords.slice().reverse() : [];
+  const r = source[idx];
+  if (!r || !r.rowIndex) { alert('無法取得資料，請按 ↻ 重新整理後再試'); return; }
   if (!confirm(`確定刪除這筆記錄？\n${r.date} ${r.note}\n$${Number(r.amount).toLocaleString('zh-TW')}`)) return;
 
-  const delBtn = document.querySelector(`#log-item-${idx} .del-log-btn`);
+  const delBtn = document.getElementById('del-btn-' + idx);
   if (delBtn) { delBtn.disabled = true; delBtn.textContent = '…'; }
-
-  // 從 _allRecords 即時查找 rowIndex
-  let rowIndex = r.rowIndex;
-  if (!rowIndex && window._allRecords) {
-    const match = window._allRecords.find(sr =>
-      sr.type === r.type &&
-      Number(sr.amount) === Number(r.amount) &&
-      sr.clinic === r.clinic
-    );
-    if (match) rowIndex = match.rowIndex;
-  }
-
-  if (!rowIndex) {
-    alert('無法取得列號，請按 ↻ 重新整理後再試');
-    if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
-    return;
-  }
 
   try {
     const res = await jsonpFetch({
       action: 'deleteRow',
-      clinic: r.clinic,
-      rowIndex: rowIndex
+      clinic: r.clinic || clinic,
+      rowIndex: r.rowIndex
     });
     if (res.success) {
-      localLog.splice(idx, 1);
+      // 從 _allRecords 移除
+      const origIdx = window._allRecords.findIndex(sr => sr.rowIndex === r.rowIndex);
+      if (origIdx !== -1) window._allRecords.splice(origIdx, 1);
       renderLog();
       setTimeout(() => loadStats(), 500);
     } else {
