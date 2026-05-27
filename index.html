@@ -442,11 +442,10 @@ async function deleteRecord(idx) {
       rowIndex: r.rowIndex
     });
     if (res.success) {
-      // 從 _allRecords 移除
-      const origIdx = window._allRecords.findIndex(sr => sr.rowIndex === r.rowIndex);
-      if (origIdx !== -1) window._allRecords.splice(origIdx, 1);
+      // 刪除後強制重新載入，確保 rowIndex 正確
+      window._allRecords = null;
       renderLog();
-      setTimeout(() => loadStats(), 500);
+      await loadStats(); // 立即重新載入，不用 setTimeout
     } else {
       alert('刪除失敗：' + (res.error || '未知錯誤'));
       if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
