@@ -413,7 +413,7 @@ function renderLog() {
       <div class="log-left">
         <div class="log-top">
           <span class="badge ${r.type}">${r.type === 'income' ? '收入' : '支出'}</span>
-          <span class="log-clinic">${r.clinic || clinic}</span>
+          <span class="log-clinic">${clinic}</span>
         </div>
         ${r.note ? `<div class="log-note">${r.note}</div>` : ''}
         <div class="log-time">${r.date} ${r.time || ''}</div>
@@ -438,7 +438,7 @@ async function deleteRecord(idx) {
   try {
     const res = await jsonpFetch({
       action: 'deleteRow',
-      clinic: r.clinic || clinic,
+      clinic: clinic,  // 使用當前選擇的診所
       rowIndex: r.rowIndex
     });
     if (res.success) {
