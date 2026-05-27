@@ -408,27 +408,6 @@ async function submitRecord() {
 }
 
 
-async function deleteRecord(clinicName, rowIndex) {
-  if (!confirm('確定要刪除這筆記錄嗎？\n刪除後 Google Sheets 對應列也會一併移除。')) return;
-  const btn = document.getElementById('del-' + rowIndex);
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  try {
-    const res = await jsonpFetch({ action: 'deleteRow', clinic: clinicName, rowIndex });
-    if (res.success) {
-      // 從 localLog 移除
-      localLog = localLog.filter(r => r.rowIndex !== rowIndex);
-      renderLog();
-      setTimeout(() => loadStats(), 500);
-    } else {
-      alert('刪除失敗：' + (res.error || '未知錯誤'));
-      if (btn) { btn.disabled = false; btn.textContent = '✕ 刪除'; }
-    }
-  } catch(e) {
-    alert('連線失敗：' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '✕ 刪除'; }
-  }
-}
-
 function showStatus(t, msg) { const el = document.getElementById('status'); el.className = 'status ' + t; el.textContent = msg; }
 
 function renderLog() {
@@ -460,11 +439,18 @@ async function deleteRecord(idx) {
   const delBtn = document.querySelector(`#log-item-${idx} .del-log-btn`);
   if (delBtn) { delBtn.disabled = true; delBtn.textContent = '…'; }
 
+  // 如果沒有 rowIndex，先載入統計取得 rowIndex
+  if (!r.rowIndex) {
+    alert('請先按 ↻ 重新整理後再刪除');
+    if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
+    return;
+  }
+
   try {
     const res = await jsonpFetch({
       action: 'deleteRow',
       clinic: r.clinic,
-      rowNum: r.rowNum
+      rowIndex: r.rowIndex
     });
     if (res.success) {
       localLog.splice(idx, 1);
