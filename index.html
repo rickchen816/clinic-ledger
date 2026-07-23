@@ -1,522 +1,610 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="隨手記帳本">
-<meta name="theme-color" content="#f3eeff">
-<title>隨手記帳本</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
-:root{
-  --bg:#f8f7fc;
-  --navy:#1a1a2e;
-  --purple:#6c5ce7;
-  --purple-mid:#7d6ff0;
-  --purple-light:#a29bfe;
-  --purple-pale:#ede9fe;
-  --pink:#fd79a8;
-  --pink-pale:#ffeef5;
-  --card:#ffffff;
-  --border:#e8e3f5;
-  --text:#2d2d3a;
-  --muted:#9691b0;
-  --income-color:#00b894;
-  --income-pale:#e0faf5;
-  --expense-color:#e17055;
-  --expense-pale:#fef0ec;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{font-family:'Noto Sans TC',-apple-system,'PingFang TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-text-size-adjust:100%;font-size:16px;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>日文口說翻譯官</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a22;
+      --border: #2e2e3a;
+      --primary: #e63946;
+      --primary-glow: rgba(230,57,70,0.3);
+      --jp: #ff6b6b;
+      --zh: #4ecdc4;
+      --text: #f0f0f5;
+      --text-muted: #6b6b80;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-/* Header */
-.header{background:linear-gradient(135deg,#f3eeff,#fce8f3);padding:calc(env(safe-area-inset-top) + 36px) 18px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid #e8dcf8;}
-.header-top{display:flex;align-items:center;gap:10px;padding-bottom:10px;}
-.header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;flex-shrink:0;box-shadow:0 4px 14px rgba(108,92,231,0.35);font-family:-apple-system,sans-serif;}
-.header-text h1{color:var(--navy);font-size:19px;font-weight:700;letter-spacing:0.5px;}
-.clinic-tabs{display:flex;gap:2px;padding-bottom:0;}
-.ctab{flex:1;padding:9px 2px;font-size:12px;font-weight:600;color:rgba(80,60,130,0.45);background:transparent;border:none;cursor:pointer;text-align:center;position:relative;letter-spacing:0px;border-radius:10px 10px 0 0;}
-.ctab::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:3px;background:linear-gradient(90deg,var(--purple-light),var(--pink));border-radius:3px 3px 0 0;opacity:0;transition:opacity 0.2s;}
-.ctab.active{color:var(--navy);font-weight:700;}
-.ctab.active::after{opacity:1;}
+    body {
+      font-family: 'Noto Sans TC', 'Noto Sans JP', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+    }
 
-/* Main */
-.main{padding:16px 14px calc(env(safe-area-inset-bottom)+24px);max-width:540px;margin:0 auto;}
-.card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 4px 16px rgba(108,92,231,0.08);border:1px solid var(--border);}
+    header {
+      width: 100%;
+      padding: 20px 24px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-/* 月份選擇器 */
-.month-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.month-select-wrap{position:relative;flex:1;}
-.month-select{width:100%;padding:12px 36px 12px 14px;font-size:15px;font-family:inherit;font-weight:600;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--navy);-webkit-appearance:none;appearance:none;outline:none;cursor:pointer;}
-.month-select:focus{border-color:var(--purple-light);box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
-.select-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:13px;}
-.refresh-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--purple);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.refresh-btn:active{background:var(--purple-pale);}
-.refresh-btn.spinning{animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+    .app-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .app-title span { color: var(--jp); }
 
-/* 統計卡 */
-.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
-.stat-card{background:var(--card);border-radius:14px;padding:14px 10px;text-align:center;border:1px solid var(--border);box-shadow:0 2px 8px rgba(108,92,231,0.06);}
-.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:0.5px;}
-.stat-value{font-size:17px;font-weight:700;}
-.stat-value.income{color:var(--income-color);}
-.stat-value.expense{color:var(--expense-color);}
-.stat-value.balance{color:var(--purple);}
-.stat-value.negative{color:var(--expense-color);}
-.stat-loading{font-size:13px;color:var(--muted);font-weight:400;}
-.stat-period{font-size:11px;color:var(--muted);margin-top:4px;font-weight:400;}
+    .settings-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
 
-/* 輸入卡 */
-.section-title{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:0.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-.type-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
-.type-btn{padding:16px 10px;font-size:17px;font-weight:700;border-radius:14px;border:2px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;text-align:center;-webkit-appearance:none;transition:all 0.2s;letter-spacing:1px;}
-.type-btn.income.active{background:var(--income-pale);color:var(--income-color);border-color:var(--income-color);box-shadow:0 4px 12px rgba(0,184,148,0.2);}
-.type-btn.expense.active{background:var(--expense-pale);color:var(--expense-color);border-color:var(--expense-color);box-shadow:0 4px 12px rgba(225,112,85,0.2);}
-.amount-wrap{background:var(--bg);border:2px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:6px;transition:border 0.2s;}
-.amount-wrap:focus-within{border-color:var(--purple-light);background:white;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
-.amount-currency{font-size:20px;font-weight:700;color:var(--muted);}
-.amount-input{flex:1;border:none;background:transparent;font-size:34px;font-weight:700;color:var(--purple);font-family:inherit;-webkit-appearance:none;outline:none;min-width:0;}
-.amount-input.expense-mode{color:var(--expense-color);}
-.amount-input::placeholder{color:#d4cff0;}
-.field-label{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
-.select-wrap{position:relative;margin-bottom:16px;}
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 20px 32px;
+      gap: 16px;
+    }
 
-/* 日期選擇器 */
-.date-picker-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
-.date-select-wrap{position:relative;flex:1;}
-.date-select{width:100%;padding:11px 32px 11px 12px;font-size:15px;font-family:inherit;font-weight:600;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);-webkit-appearance:none;appearance:none;outline:none;cursor:pointer;transition:border 0.2s;}
-.date-select:focus{border-color:var(--purple-light);background:white;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
-.date-select-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:12px;}
+    /* Direction badge */
+    .dir-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .dir-badge.jp-to-zh { color: var(--jp); border-color: var(--jp); background: rgba(255,107,107,0.08); }
+    .dir-badge.zh-to-jp { color: var(--zh); border-color: var(--zh); background: rgba(78,205,196,0.08); }
 
+    /* Cards */
+    .cards { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 
-.note-input{width:100%;padding:13px 14px;font-size:16px;font-family:inherit;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);resize:none;height:80px;-webkit-appearance:none;outline:none;margin-bottom:16px;transition:border 0.2s;}
-.note-input:focus{border-color:var(--purple-light);background:white;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
-.submit-btn{width:100%;padding:17px;font-size:17px;font-weight:700;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),var(--purple-mid));color:white;cursor:pointer;letter-spacing:1px;-webkit-appearance:none;box-shadow:0 4px 16px rgba(108,92,231,0.35);transition:all 0.15s;}
-.submit-btn:active{transform:scale(0.98);}
-.submit-btn:disabled{background:var(--border);color:var(--muted);box-shadow:none;}
-.submit-btn.expense-mode{background:linear-gradient(135deg,var(--expense-color),#e8836a);box-shadow:0 4px 16px rgba(225,112,85,0.35);}
-.status{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:15px;font-weight:500;display:none;}
-.status.success{background:var(--income-pale);color:var(--income-color);display:block;}
-.status.error{background:var(--expense-pale);color:var(--expense-color);display:block;}
-.status.loading{background:var(--purple-pale);color:var(--purple);display:block;}
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      min-height: 72px;
+      position: relative;
+    }
 
-/* 記錄 */
-.log-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.log-title{font-size:16px;font-weight:700;}
-.log-count{font-size:12px;background:var(--purple-pale);color:var(--purple);padding:4px 12px;border-radius:20px;font-weight:600;}
-.log-item{padding:13px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-.log-item:last-child{border-bottom:none;}
-.log-left{flex:1;min-width:0;}
-.log-top{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
-.badge{font-size:11px;padding:3px 10px;border-radius:6px;font-weight:700;}
-.badge.income{background:var(--income-pale);color:var(--income-color);}
-.badge.expense{background:var(--expense-pale);color:var(--expense-color);}
-.log-clinic{font-size:14px;font-weight:600;color:var(--navy);}
-.log-cat{font-size:13px;color:var(--muted);}
-.log-note{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.log-time{font-size:11px;color:#c4bedd;margin-top:3px;}
-.log-amount{font-size:18px;font-weight:700;white-space:nowrap;}
-.log-amount.income{color:var(--income-color);}
-.log-amount.expense{color:var(--expense-color);}
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+    .card-label.jp { color: var(--jp); }
+    .card-label.zh { color: var(--zh); }
 
-/* 刪除按鈕 */
-.del-log-btn{padding:4px 10px;font-size:12px;font-weight:600;border-radius:6px;border:1.5px solid #f0b8a8;background:var(--expense-pale);color:var(--expense-color);cursor:pointer;flex-shrink:0;-webkit-appearance:none;}
-.del-log-btn:active{background:var(--expense-color);color:white;}
-.del-log-btn:disabled{opacity:0.5;}
+    .card-text {
+      font-size: 19px;
+      line-height: 1.65;
+      min-height: 32px;
+      word-break: break-all;
+    }
+    .card-text.placeholder { color: var(--text-muted); font-size: 14px; }
+    .card-text.listening   { color: var(--jp); }
 
-.empty{text-align:center;padding:28px 0;color:#c4bedd;font-size:15px;}
-.empty-icon{font-size:36px;margin-bottom:10px;}
+    .copy-mini {
+      position: absolute;
+      top: 10px; right: 12px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      display: none;
+    }
+    .card:hover .copy-mini { display: block; }
 
-.del-log-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #f0b8a8;background:var(--expense-pale);color:var(--expense-color);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-appearance:none;}
-.del-log-btn:active{background:var(--expense-color);color:white;}
-.del-log-btn:disabled{opacity:0.5;}
-.sheets-link{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;background:var(--card);border-radius:14px;color:var(--purple);text-decoration:none;font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(108,92,231,0.08);border:1px solid var(--border);}
-</style>
+    /* Waveform */
+    .visualizer {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .visualizer.active { opacity: 1; }
+
+    .bar {
+      width: 4px;
+      border-radius: 2px;
+      background: var(--jp);
+      animation: wave 0.8s ease-in-out infinite;
+      height: 8px;
+    }
+    .bar:nth-child(1){animation-delay:0.0s}
+    .bar:nth-child(2){animation-delay:0.1s}
+    .bar:nth-child(3){animation-delay:0.2s}
+    .bar:nth-child(4){animation-delay:0.3s}
+    .bar:nth-child(5){animation-delay:0.4s}
+    .bar:nth-child(6){animation-delay:0.3s}
+    .bar:nth-child(7){animation-delay:0.2s}
+    .bar:nth-child(8){animation-delay:0.1s}
+    .bar:nth-child(9){animation-delay:0.0s}
+
+    @keyframes wave {
+      0%,100% { height: 8px; }
+      50%      { height: 36px; }
+    }
+
+    /* PTT */
+    .ptt-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .ptt-hint { font-size: 13px; color: var(--text-muted); }
+
+    .ptt-btn {
+      width: 136px;
+      height: 136px;
+      border-radius: 50%;
+      border: none;
+      background: radial-gradient(circle at 40% 35%, #e63946, #9b1c28);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: transform 0.1s, box-shadow 0.3s;
+      touch-action: none;
+      box-shadow: 0 4px 24px rgba(230,57,70,0.3);
+    }
+    .ptt-btn:hover { transform: scale(1.03); }
+    .ptt-btn.pressed {
+      transform: scale(0.93);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 10px rgba(230,57,70,0.25); }
+      50%      { box-shadow: 0 0 0 26px rgba(230,57,70,0.08); }
+    }
+
+    .ptt-icon  { font-size: 38px; }
+    .ptt-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.85); }
+
+    .status { font-size: 14px; color: var(--text-muted); text-align: center; height: 20px; }
+    .status.recording   { color: var(--jp); }
+    .status.translating { color: var(--zh); }
+
+    /* Error */
+    .error-bar {
+      display: none;
+      width: 100%;
+      background: #3d1515;
+      border: 1px solid #7f1d1d;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #fca5a5;
+    }
+
+    /* History */
+    .history { width: 100%; }
+    .history-title {
+      font-size: 11px; color: var(--text-muted);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .history-list {
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 180px; overflow-y: auto;
+    }
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .history-item .dir   { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+    .history-item .orig  { color: var(--text-muted); margin-bottom: 2px; }
+    .history-item .trans { color: var(--text); }
+
+    /* Settings */
+    .settings-panel {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .settings-panel.open { display: flex; }
+
+    .settings-box {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 24px 40px;
+      width: 100%; max-width: 480px;
+    }
+    .settings-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+    }
+    .field input:focus { border-color: var(--primary); }
+
+    .close-settings {
+      width: 100%;
+      background: var(--primary);
+      border: none; color: white;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #333; color: white;
+      padding: 10px 20px; border-radius: 999px;
+      font-size: 13px; transition: transform 0.3s;
+      z-index: 200; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-top">
-    <div class="header-icon">＄</div>
-    <div class="header-text"><h1>收支管理</h1></div>
+<header>
+  <div class="app-title"><span>日文</span> 口說翻譯官</div>
+  <button class="settings-btn" onclick="openSettings()">⚙ 設定</button>
+</header>
+
+<main>
+  <div class="dir-badge" id="dirBadge">🎙 自動辨識語言</div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-label jp">說的話</div>
+      <div class="card-text placeholder" id="srcDisplay">按住下方按鈕，說日文或中文…</div>
+      <button class="copy-mini" onclick="copyText('src')">複製</button>
+    </div>
+    <div class="card">
+      <div class="card-label zh">翻譯結果</div>
+      <div class="card-text placeholder" id="dstDisplay">翻譯結果會出現在這裡…</div>
+      <button class="copy-mini" onclick="copyText('dst')">複製</button>
+    </div>
   </div>
-  <div class="clinic-tabs">
-    <button class="ctab active" onclick="switchClinic('泰山植德現金(金庫)',this)">泰山現金</button>
-    <button class="ctab" onclick="switchClinic('泰山植德帳戶(玉山)',this)">泰山帳戶</button>
-    <button class="ctab" onclick="switchClinic('南崁植德現金(金庫)',this)">南崁現金</button>
-    <button class="ctab" onclick="switchClinic('南崁植德帳戶(台新)',this)">南崁帳戶</button>
+
+  <div class="visualizer" id="viz">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  </div>
+
+  <div class="ptt-wrap">
+    <div class="ptt-hint">按住說話，放開翻譯</div>
+    <button class="ptt-btn" id="pttBtn"
+      onmousedown="startRec(event)" onmouseup="stopRec(event)"
+      ontouchstart="startRec(event)" ontouchend="stopRec(event)">
+      <span class="ptt-icon">🎙</span>
+      <span class="ptt-label" id="pttLabel">按住說話</span>
+    </button>
+    <div class="status" id="status">就緒</div>
+  </div>
+
+  <div class="error-bar" id="errorBar"></div>
+
+  <div class="history" id="historyWrap" style="display:none">
+    <div class="history-title">歷史記錄</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</main>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-box">
+    <h3>⚙ 設定</h3>
+    <div class="field">
+      <label>Gemini API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="AIza…（空白則使用內建 Key）" />
+    </div>
+    <div class="field">
+      <label>語音朗讀速度（0.5 ～ 2.0）</label>
+      <input type="number" id="ttsRate" value="1.0" min="0.5" max="2.0" step="0.1" />
+    </div>
+    <button class="close-settings" onclick="closeSettings()">完成</button>
   </div>
 </div>
 
-<div class="main">
-
-  <!-- 月份選擇 + 統計 -->
-  <div class="card">
-    <div class="month-bar">
-      <div class="month-select-wrap">
-        <select class="month-select" id="month-select" onchange="loadStats()">
-          <option value="all">📊 全部總計</option>
-        </select>
-        <span class="select-arrow">▼</span>
-      </div>
-      <button class="refresh-btn" id="refresh-btn" onclick="loadStats()" title="重新整理">↻</button>
-    </div>
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">收入</div>
-        <div class="stat-value income" id="stat-income">—</div>
-        <div class="stat-period" id="stat-period-i"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">支出</div>
-        <div class="stat-value expense" id="stat-expense">—</div>
-        <div class="stat-period" id="stat-period-e"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">結餘</div>
-        <div class="stat-value balance" id="stat-balance">—</div>
-        <div class="stat-period" id="stat-period-b"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 輸入 -->
-  <div class="card">
-    <div class="section-title">✏️ 新增記錄</div>
-    <div class="type-row">
-      <button class="type-btn income active" id="btn-income" onclick="setType('income')">＋ 收入</button>
-      <button class="type-btn expense" id="btn-expense" onclick="setType('expense')">－ 支出</button>
-    </div>
-    <div class="amount-wrap" onclick="document.getElementById('amount').focus()">
-      <span class="amount-currency">$</span>
-      <input type="number" id="amount" class="amount-input" placeholder="0" min="0" inputmode="numeric" pattern="[0-9]*">
-    </div>
-    <div class="field-label">📅 說明日期 ＋ 說明內容</div>
-    <div class="date-picker-row">
-      <div class="date-select-wrap">
-        <select class="date-select" id="month-pick" onchange="updateDayPicker()">
-          <option value="">月份</option>
-        </select>
-        <span class="date-select-arrow">▼</span>
-      </div>
-      <div class="date-select-wrap">
-        <select class="date-select" id="day-pick">
-          <option value="">日期</option>
-        </select>
-        <span class="date-select-arrow">▼</span>
-      </div>
-    </div>
-    <textarea class="note-input" id="note" placeholder="補充說明…" oninput="checkNote()"></textarea>
-    <button class="submit-btn" id="submit-btn" onclick="submitRecord()" disabled>寫入 Google Sheets</button>
-    <div class="status" id="status"></div>
-  </div>
-
-  <!-- 本次記錄 -->
-  <div class="card">
-    <div class="log-header">
-      <div class="log-title">本次記錄</div>
-      <div class="log-count" id="log-count">0 筆</div>
-    </div>
-    <div id="log-list"><div class="empty"><div class="empty-icon">📋</div>尚未記錄任何項目</div></div>
-  </div>
-
-  <a class="sheets-link" href="https://docs.google.com/spreadsheets/d/1dPFA-FjIbdrQTQ2b1Wcdrytq66hSO2NCgtjN8hSq2Og/edit" target="_blank">
-    📊 開啟 Google Sheets 查看完整記錄
-  </a>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
-const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyPtqS-b651URlF3shtPYIuxYcs8gZQi4lyRSHlnK5W8503jlXtIWnpfHI7C-TwYqvz/exec';
-const DEFAULT_CATS = {
-  income: ['掛號費','診察費','自費項目','保險給付','其他收入'],
-  expense: ['藥費','材料費','設備費','薪資','水電費','租金','雜費']
-};
+  // ──────────────────────────────────────────
+  //  填入你的 Gemini API Key
+  // ──────────────────────────────────────────
+  const BUILT_IN_KEY = "YOUR_GEMINI_API_KEY_HERE";
+  // ──────────────────────────────────────────
 
-let clinic = '泰山植德現金(金庫)', type = 'income', localLog = [], cbCounter = 0;
+  const GEMINI_MODEL = "gemini-2.0-flash";
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-
-/* ── JSONP ── */
-function jsonpFetch(params) {
-  return new Promise((resolve, reject) => {
-    const cbName = 'cb_' + (++cbCounter) + '_' + Date.now();
-    const timer = setTimeout(() => { cleanup(); reject(new Error('請求逾時，請重試')); }, 15000);
-    let script;
-    function cleanup() { clearTimeout(timer); delete window[cbName]; if (script) script.remove(); }
-    window[cbName] = function(data) { cleanup(); resolve(data); };
-    script = document.createElement('script');
-    params.callback = cbName;
-    script.src = WEBHOOK + '?' + new URLSearchParams(params).toString();
-    script.onerror = () => { cleanup(); reject(new Error('網路連線失敗')); };
-    document.head.appendChild(script);
-  });
-}
-
-/* ── 切換診所 ── */
-function switchClinic(name, el) {
-  clinic = name;
-  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  loadStats();
-}
-
-/* ── 月份統計 ── */
-async function loadStats() {
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-  setStatLoading();
-
-  try {
-    const res = await jsonpFetch({ action: 'getStats', clinic });
-    if (res.success) {
-      updateMonthOptions(res.months);
-      calcAndShowStats(res.records);
-      window._allRecords = res.records;
-      renderLog(); // _allRecords 更新後重新渲染，顯示刪除按鈕
-    } else {
-      setStatError();
-    }
-  } catch(e) {
-    setStatError();
-  }
-  btn.classList.remove('spinning');
-}
-
-function setStatLoading() {
-  ['stat-income','stat-expense','stat-balance'].forEach(id => {
-    document.getElementById(id).textContent = '載入中…';
-    document.getElementById(id).className = 'stat-value stat-loading';
-  });
-}
-function setStatError() {
-  ['stat-income','stat-expense','stat-balance'].forEach(id => {
-    document.getElementById(id).textContent = '—';
-  });
-}
-
-function updateMonthOptions(months) {
-  const sel = document.getElementById('month-select');
-  const current = sel.value;
-  sel.innerHTML = '<option value="all">📊 全部總計</option>';
-  (months || []).sort().reverse().forEach(m => {
-    // m 格式：yyyy/MM，轉成「2026年05月」顯示
-    const parts = m.split('/');
-    const label = parts.length >= 2
-      ? parts[0] + '年' + parts[1] + '月'
-      : m;
-    sel.innerHTML += `<option value="${m}">${label}</option>`;
-  });
-  if (current && [...sel.options].some(o => o.value === current)) sel.value = current;
-  else if (!current || current === '') sel.value = 'all';
-}
-
-function calcAndShowStats(records) {
-  if (!records) { setStatError(); return; }
-  const sel = document.getElementById('month-select').value;
-  const parts = sel.split('/');
-  const label = sel === 'all' ? '全部合計' : (parts.length >= 2 ? parts[0] + '年' + parts[1] + '月' : sel);
-
-  let monthIncome = 0, monthExpense = 0, cumBalance = 0;
-
-  if (sel === 'all') {
-    // 全部總計：所有收入、支出、結餘
-    monthIncome = records.filter(r => r.type === 'income').reduce((s, r) => s + (r.amount || 0), 0);
-    monthExpense = records.filter(r => r.type === 'expense').reduce((s, r) => s + (r.amount || 0), 0);
-    cumBalance = monthIncome - monthExpense;
-  } else {
-    // 當月收入、支出
-    const monthRecords = records.filter(r => r.date && r.date.startsWith(sel));
-    monthIncome = monthRecords.filter(r => r.type === 'income').reduce((s, r) => s + (r.amount || 0), 0);
-    monthExpense = monthRecords.filter(r => r.type === 'expense').reduce((s, r) => s + (r.amount || 0), 0);
-    // 結餘 = 截至該月底所有累計（含之前月份）
-    const allUpToMonth = records.filter(r => r.date && r.date.substring(0, 7) <= sel);
-    const cumIncome = allUpToMonth.filter(r => r.type === 'income').reduce((s, r) => s + (r.amount || 0), 0);
-    const cumExpense = allUpToMonth.filter(r => r.type === 'expense').reduce((s, r) => s + (r.amount || 0), 0);
-    cumBalance = cumIncome - cumExpense;
+  if (!SR) {
+    showError("你的瀏覽器不支援語音辨識，請使用 Chrome 或 Edge。");
+    document.getElementById("pttBtn").disabled = true;
   }
 
-  document.getElementById('stat-income').textContent = '$' + monthIncome.toLocaleString('zh-TW');
-  document.getElementById('stat-income').className = 'stat-value income';
-  document.getElementById('stat-expense').textContent = '$' + monthExpense.toLocaleString('zh-TW');
-  document.getElementById('stat-expense').className = 'stat-value expense';
-  document.getElementById('stat-balance').textContent = (cumBalance >= 0 ? '+$' : '-$') + Math.abs(cumBalance).toLocaleString('zh-TW');
-  document.getElementById('stat-balance').className = 'stat-value ' + (cumBalance >= 0 ? 'balance' : 'negative');
-  document.getElementById('stat-period-i').textContent = label + ' 收入';
-  document.getElementById('stat-period-e').textContent = label + ' 支出';
-  document.getElementById('stat-period-b').textContent = sel === 'all' ? '全部結餘' : '截至' + label + '底結餘';
-}
+  let isRecording = false;
+  let recJA = null, recZH = null;
+  let txJA = "", txZH = "";
+  let history = [];
 
-/* ── 類型切換 ── */
-function setType(t) {
-  type = t;
-  document.getElementById('btn-income').classList.toggle('active', t === 'income');
-  document.getElementById('btn-expense').classList.toggle('active', t === 'expense');
-  document.getElementById('amount').className = 'amount-input' + (t === 'expense' ? ' expense-mode' : '');
-  const btn = document.getElementById('submit-btn');
-  btn.className = 'submit-btn' + (t === 'expense' ? ' expense-mode' : '');
-  btn.disabled = document.getElementById('note').value.trim().length === 0;
-}
+  const pttBtn     = document.getElementById("pttBtn");
+  const pttLabel   = document.getElementById("pttLabel");
+  const statusEl   = document.getElementById("status");
+  const srcDisplay = document.getElementById("srcDisplay");
+  const dstDisplay = document.getElementById("dstDisplay");
+  const viz        = document.getElementById("viz");
+  const errorBar   = document.getElementById("errorBar");
+  const dirBadge   = document.getElementById("dirBadge");
 
-/* ── 送出 ── */
-async function submitRecord() {
-  const amount = parseFloat(document.getElementById('amount').value);
-  const m = document.getElementById('month-pick').value;
-  const d = document.getElementById('day-pick').value;
-  const noteText = document.getElementById('note').value.trim();
-  const datePrefix = (m && d) ? m + '/' + d + ' ' : '';
-  const note = datePrefix + noteText;
-  if (!amount || amount <= 0) { showStatus('error', '⚠️ 請輸入金額'); return; }
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true; showStatus('loading', '⏳ 寫入中…');
-  const now = new Date();
-  const data = {
-    clinic, type, amount,
-    note: note || '',
-    date: now.toLocaleDateString('zh-TW'),
-    time: now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
-  };
-  try {
-    const res = await jsonpFetch({ ...data });
-    if (res.success) {
-      showStatus('success', '✅ 已寫入「' + clinic + '」！');
-      localLog.unshift(data); renderLog();
-      document.getElementById('amount').value = '';
-      document.getElementById('note').value = '';
-      checkNote(); // 重新檢查說明欄，確保按鈕狀態正確
-      setTimeout(() => loadStats(), 800);
-    } else {
-      showStatus('error', '❌ ' + (res.error || '未知錯誤'));
-      btn.disabled = false; // 失敗才重新啟用
-    }
-  } catch(e) {
-    showStatus('error', '❌ ' + e.message);
-    btn.disabled = false; // 失敗才重新啟用
+  // 偵測語言：有平假名/片假名 → 日文，否則 → 中文
+  function detectLang(text) {
+    return /[぀-ゟ゠-ヿ]/.test(text) ? "ja" : "zh";
   }
-}
 
+  function buildSR(lang, onText) {
+    const r = new SR();
+    r.continuous = false;
+    r.interimResults = true;
+    r.lang = lang;
 
-function showStatus(t, msg) { const el = document.getElementById('status'); el.className = 'status ' + t; el.textContent = msg; }
+    r.onresult = (e) => {
+      let text = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        text += e.results[i][0].transcript;
+      }
+      if (text) onText(text);
+    };
 
-function renderLog() {
-  // 優先顯示從 Sheets 讀回的資料（有 rowIndex），否則顯示本次記錄
-  const source = (window._allRecords && window._allRecords.length) ? window._allRecords.slice().reverse() : localLog;
-  const isFromSheets = !!(window._allRecords && window._allRecords.length);
+    r.onerror = (e) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      if (e.error === "not-allowed") showError("麥克風權限被拒絕，請允許後再試。");
+    };
 
-  document.getElementById('log-count').textContent = source.length + ' 筆';
-  const el = document.getElementById('log-list');
-  if (!source.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>尚未記錄任何項目</div>'; return; }
-  el.innerHTML = source.slice(0, 10).map((r, i) => `
-    <div class="log-item" id="log-item-${i}">
-      <div class="log-left">
-        <div class="log-top">
-          <span class="badge ${r.type}">${r.type === 'income' ? '收入' : '支出'}</span>
-          <span class="log-clinic">${clinic}</span>
-        </div>
-        ${r.note ? `<div class="log-note">${r.note}</div>` : ''}
-        <div class="log-time">${r.date} ${r.time || ''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <div class="log-amount ${r.type}">${r.type === 'income' ? '＋' : '－'}$${Number(r.amount).toLocaleString('zh-TW')}</div>
-        ${isFromSheets && r.rowIndex ? `<button class="del-log-btn" id="del-btn-${i}" onclick="deleteRecord(${i})" title="刪除">✕</button>` : '<span style="font-size:11px;color:#ccc;">↻</span>'}
-      </div>
-    </div>`).join('');
-}
+    // 按住期間持續辨識
+    r.onend = () => {
+      if (isRecording) { try { r.start(); } catch(_) {} }
+    };
 
-async function deleteRecord(idx) {
-  // 直接從 _allRecords 取資料（已有 rowIndex）
-  const source = window._allRecords ? window._allRecords.slice().reverse() : [];
-  const r = source[idx];
-  if (!r || !r.rowIndex) { alert('無法取得資料，請按 ↻ 重新整理後再試'); return; }
-  if (!confirm(`確定刪除這筆記錄？\n${r.date} ${r.note}\n$${Number(r.amount).toLocaleString('zh-TW')}`)) return;
+    return r;
+  }
 
-  const delBtn = document.getElementById('del-btn-' + idx);
-  if (delBtn) { delBtn.disabled = true; delBtn.textContent = '…'; }
+  function startRec(e) {
+    e.preventDefault();
+    if (isRecording || !SR) return;
+    isRecording = true;
+    txJA = ""; txZH = "";
 
-  try {
-    const res = await jsonpFetch({
-      action: 'deleteRow',
-      clinic: clinic,  // 使用當前選擇的診所
-      rowIndex: r.rowIndex
+    srcDisplay.className = "card-text listening";
+    srcDisplay.textContent = "聆聽中…";
+    dstDisplay.className = "card-text placeholder";
+    dstDisplay.textContent = "翻譯結果會出現在這裡…";
+    errorBar.style.display = "none";
+    dirBadge.className = "dir-badge";
+    dirBadge.textContent = "🎙 聆聽中…";
+
+    pttBtn.classList.add("pressed");
+    pttLabel.textContent = "放開翻譯";
+    setStatus("🔴 錄音中…", "recording");
+    viz.classList.add("active");
+
+    // 同時啟動日文 & 中文辨識
+    recJA = buildSR("ja-JP", (t) => {
+      txJA = t;
+      srcDisplay.className = "card-text listening";
+      srcDisplay.textContent = t;
     });
-    if (res.success) {
-      // 刪除後強制重新載入，確保 rowIndex 正確
-      window._allRecords = null;
-      renderLog();
-      await loadStats(); // 立即重新載入，不用 setTimeout
-    } else {
-      alert('刪除失敗：' + (res.error || '未知錯誤'));
-      if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
+    recZH = buildSR("zh-TW", (t) => {
+      txZH = t;
+      // 日文沒辨識到才顯示中文結果
+      if (!txJA) {
+        srcDisplay.className = "card-text listening";
+        srcDisplay.textContent = t;
+      }
+    });
+
+    try { recJA.start(); } catch(_) {}
+    try { recZH.start(); } catch(_) {}
+  }
+
+  function stopRec(e) {
+    e.preventDefault();
+    if (!isRecording) return;
+    isRecording = false;
+
+    [recJA, recZH].forEach(r => {
+      if (!r) return;
+      r.onend = null;
+      try { r.stop(); } catch(_) {}
+    });
+    recJA = null; recZH = null;
+
+    pttBtn.classList.remove("pressed");
+    pttLabel.textContent = "按住說話";
+    viz.classList.remove("active");
+
+    // 選最佳文字：優先日文；若都有，取較長的
+    const text = (txJA && txZH)
+      ? (txJA.length >= txZH.length ? txJA : txZH)
+      : (txJA || txZH || "");
+
+    if (!text.trim()) {
+      setStatus("就緒", "");
+      dirBadge.className = "dir-badge";
+      dirBadge.textContent = "🎙 自動辨識語言";
+      return;
     }
-  } catch(e) {
-    alert('刪除失敗：' + e.message);
-    if (delBtn) { delBtn.disabled = false; delBtn.textContent = '✕'; }
-  }
-}
 
-
-/* ── 日期選擇器初始化 ── */
-function initDatePicker() {
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentDay = now.getDate();
-  const monthSel = document.getElementById('month-pick');
-  const daySel = document.getElementById('day-pick');
-
-  // 填入月份
-  monthSel.innerHTML = '<option value="">月份</option>';
-  for (let m = 1; m <= 12; m++) {
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = m + '月';
-    if (m === currentMonth) opt.selected = true;
-    monthSel.appendChild(opt);
+    srcDisplay.className = "card-text";
+    srcDisplay.textContent = text;
+    setStatus("⏳ 翻譯中…", "translating");
+    translateText(text.trim());
   }
 
-  // 填入日期
-  updateDayPicker();
+  async function translateText(text) {
+    const userKey = document.getElementById("apiKeyInput").value.trim();
+    const apiKey  = userKey || BUILT_IN_KEY;
 
-  // 預設今天日期
-  setTimeout(() => {
-    daySel.value = currentDay;
-  }, 50);
-}
+    if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+      showError("請在設定中填入 Gemini API Key");
+      setStatus("就緒", "");
+      return;
+    }
 
-function updateDayPicker() {
-  const monthSel = document.getElementById('month-pick');
-  const daySel = document.getElementById('day-pick');
-  const month = parseInt(monthSel.value);
-  const now = new Date();
-  const daysInMonth = month ? new Date(now.getFullYear(), month, 0).getDate() : 31;
-  const prevDay = parseInt(daySel.value);
+    const prompt =
+`你是專業雙語口譯員，負責日文與繁體中文的即時口譯。
 
-  daySel.innerHTML = '<option value="">日期</option>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = d + '日';
-    daySel.appendChild(opt);
+請自動判斷輸入文字的語言，再翻譯：
+- 若是【日文】→ 翻譯成繁體中文
+- 若是【中文】→ 翻譯成日文；使用自然日常口語，搭配適當敬語（です・ます 體），語氣親切自然，避免生硬書面感
+
+只輸出翻譯結果，不加任何說明、標注或引號。
+
+輸入：${text}`;
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+          })
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data   = await res.json();
+      const result = (data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim();
+
+      dstDisplay.className = "card-text";
+      dstDisplay.textContent = result;
+      setStatus("✅ 翻譯完成", "");
+
+      const isJP = detectLang(text) === "ja";
+      dirBadge.className = "dir-badge " + (isJP ? "jp-to-zh" : "zh-to-jp");
+      dirBadge.textContent = isJP ? "🇯🇵 日文  →  繁體中文 🇹🇼" : "🇹🇼 繁中  →  日文 🇯🇵";
+
+      speak(result, isJP ? "zh-TW" : "ja-JP");
+      addHistory(text, result, isJP);
+
+    } catch (err) {
+      showError("翻譯失敗：" + err.message);
+      setStatus("就緒", "");
+    }
   }
-  if (prevDay && prevDay <= daysInMonth) daySel.value = prevDay;
-}
 
-// 初始化
-initDatePicker();
-loadStats();
-
-// 說明欄監聽：有內容才啟用按鈕
-function checkNote() {
-  const btn = document.getElementById('submit-btn');
-  const hasNote = document.getElementById('note').value.trim().length > 0;
-  btn.disabled = !hasNote;
-  if (!hasNote) {
-    btn.className = 'submit-btn' + (type === 'expense' ? ' expense-mode' : '');
+  function speak(text, lang) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang  = lang;
+    utt.rate  = parseFloat(document.getElementById("ttsRate").value) || 1.0;
+    const v   = speechSynthesis.getVoices().find(v => v.lang.startsWith(lang.slice(0,2)));
+    if (v) utt.voice = v;
+    speechSynthesis.speak(utt);
   }
-}
 
+  if (window.speechSynthesis) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  }
 
+  function addHistory(orig, trans, isJP) {
+    history.unshift({ orig, trans, isJP });
+    if (history.length > 10) history.pop();
+    const wrap = document.getElementById("historyWrap");
+    const list = document.getElementById("historyList");
+    wrap.style.display = "block";
+    list.innerHTML = history.map(h => `
+      <div class="history-item">
+        <div class="dir">${h.isJP ? "🇯🇵 → 🇹🇼" : "🇹🇼 → 🇯🇵"}</div>
+        <div class="orig">${escHtml(h.orig)}</div>
+        <div class="trans">${escHtml(h.trans)}</div>
+      </div>`).join("");
+  }
+
+  function setStatus(msg, cls) { statusEl.textContent = msg; statusEl.className = "status " + cls; }
+
+  function showError(msg) { errorBar.textContent = "⚠️ " + msg; errorBar.style.display = "block"; }
+
+  function copyText(side) {
+    const el = side === "src" ? srcDisplay : dstDisplay;
+    if (el.classList.contains("placeholder")) return;
+    navigator.clipboard.writeText(el.textContent).then(() => showToast("已複製"));
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2000);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function openSettings()  { document.getElementById("settingsPanel").classList.add("open"); }
+  function closeSettings() { document.getElementById("settingsPanel").classList.remove("open"); }
+
+  document.getElementById("settingsPanel").addEventListener("click", e => {
+    if (e.target === document.getElementById("settingsPanel")) closeSettings();
+  });
+
+  pttBtn.addEventListener("contextmenu", e => e.preventDefault());
 </script>
 </body>
 </html>
