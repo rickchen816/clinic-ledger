@@ -39,8 +39,9 @@ html,body{font-family:'Noto Sans TC',-apple-system,'PingFang TC',sans-serif;back
 .header-top{display:flex;align-items:center;gap:10px;padding-bottom:10px;}
 .header-icon{width:40px;height:40px;border-radius:12px;flex-shrink:0;overflow:hidden;box-shadow:0 4px 14px rgba(108,92,231,0.35);}.header-icon img{width:100%;height:100%;object-fit:cover;border-radius:12px;}
 .header-text h1{color:var(--navy);font-size:19px;font-weight:700;letter-spacing:0.5px;}
-.clinic-tabs{display:flex;gap:2px;padding-bottom:0;}
-.ctab{flex:1;padding:6px 1px;font-size:10px;font-weight:600;color:rgba(80,60,130,0.45);background:transparent;border:none;cursor:pointer;text-align:center;position:relative;letter-spacing:0px;border-radius:10px 10px 0 0;}
+.clinic-tabs{display:flex;flex-wrap:wrap;gap:2px;padding-bottom:0;}
+.ctab-row{display:flex;width:100%;gap:2px;}
+.ctab{flex:1;padding:7px 2px;font-size:11px;font-weight:600;color:rgba(80,60,130,0.45);background:transparent;border:none;cursor:pointer;text-align:center;position:relative;letter-spacing:0px;border-radius:10px 10px 0 0;}
 .ctab::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:3px;background:linear-gradient(90deg,var(--purple-light),var(--pink));border-radius:3px 3px 0 0;opacity:0;transition:opacity 0.2s;}
 .ctab.active{color:var(--navy);font-weight:700;}
 .ctab.active::after{opacity:1;}
@@ -147,13 +148,17 @@ html,body{font-family:'Noto Sans TC',-apple-system,'PingFang TC',sans-serif;back
     <div class="header-text"><h1>收支管理</h1></div>
   </div>
   <div class="clinic-tabs">
-    <button class="ctab active" onclick="switchClinic('泰山植德現金(金庫)',this)">泰山現金</button>
-    <button class="ctab" onclick="switchClinic('泰山植德帳戶(玉山)',this)">泰山帳戶</button>
-    <button class="ctab" onclick="switchClinic('南崁植德現金(金庫)',this)">南崁現金</button>
-    <button class="ctab" onclick="switchClinic('南崁植德帳戶(台新)',this)">南崁帳戶</button>
-    <button class="ctab" onclick="switchClinic('板橋尚美現金(金庫)',this)">尚美現金</button>
-    <button class="ctab" onclick="switchClinic('板橋植德現金(金庫)',this)">板橋現金</button>
-    <button class="ctab" onclick="switchClinic('板橋植德帳戶',this)">板橋帳戶</button>
+    <div class="ctab-row">
+      <button class="ctab active" onclick="switchClinic('泰山植德現金(金庫)',this)">泰山植德現金</button>
+      <button class="ctab" onclick="switchClinic('泰山植德帳戶(玉山)',this)">泰山植德帳戶</button>
+      <button class="ctab" onclick="switchClinic('南崁植德現金(金庫)',this)">南崁植德現金</button>
+      <button class="ctab" onclick="switchClinic('南崁植德帳戶(台新)',this)">南崁植德帳戶</button>
+    </div>
+    <div class="ctab-row">
+      <button class="ctab" onclick="switchClinic('板橋植德現金(金庫)',this)">板橋植德現金</button>
+      <button class="ctab" onclick="switchClinic('板橋植德帳戶',this)">板橋植德帳戶</button>
+      <button class="ctab" onclick="switchClinic('板橋尚美現金(金庫)',this)">板橋尚美現金</button>
+    </div>
   </div>
 </div>
 
